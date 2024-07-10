@@ -11,7 +11,17 @@ public class ServerChallenge {
         Class.forName("com.mysql.cj.jdbc.Driver");
         Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mathematicschallenge","root","");
         System.out.println("Server has connected to the database.");
-        }catch(IOException |ClassNotFoundException |SQLException e){
+        while(true){
+            //accept client connection
+        Socket soc=ss.accept();
+        System.out.println(" Client has connected at " +soc);
+        BufferedReader B=new BufferedReader(new InputStreamReader(soc.getInputStream()));
+        PrintWriter out=new PrintWriter(soc.getOutputStream());
+
+        //handling client's request
+        ClientHandler c=new ClientHandler(soc, con);
+        c.start();
+        }}catch(IOException |ClassNotFoundException |SQLException e){
             e.printStackTrace();
 
         }
