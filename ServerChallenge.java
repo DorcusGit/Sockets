@@ -19,7 +19,7 @@ public class ServerChallenge {
         PrintWriter out=new PrintWriter(soc.getOutputStream());
 
         //handling client's request
-        ClientHandler c=new ClientHandler(soc, con);
+        Clienthandler c=new Clienthandler(soc, con);
         c.start();
         }}catch(IOException |ClassNotFoundException |SQLException e){
             e.printStackTrace();
