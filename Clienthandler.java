@@ -3,13 +3,9 @@ import java.sql.*;
 import java.io.*;
 import java.util.*;
 
-import javax.mail.Message;
+import javax.mail.*;
 import javax.mail.PasswordAuthentication;
-import javax.mail.MessagingException;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import javax.mail.internet.*;
 
 public class Clienthandler extends Thread{
     private final Socket soc;
@@ -79,29 +75,23 @@ public class Clienthandler extends Thread{
     }
 
     //confirming participant
-    private void confirmApplicant(Connection con2, String username, boolean b) throws SQLException {
+    private void confirmApplicant(Connection con2, String username, boolean isConfirmed) throws SQLException {
         String query;
-        if (b) {
+        if (isConfirmed) {
             query = "INSERT INTO participants SELECT * FROM applicants WHERE username = ?";
         } else {
             query = "INSERT INTO rejected SELECT * FROM applicants WHERE username = ?";
         }
-        PreparedStatement ps = con.prepareStatement(query);
-        ps.setString(1, username);
-        ps.executeUpdate();
-        ps.close();
-
-        if (b) {
-            query = "DELETE FROM applicants WHERE username = ?";
-        } else {
-            query = "DELETE FROM applicants WHERE username = ?";
+        try (PreparedStatement ps = con.prepareStatement(query)) {
+            ps.setString(1, username);
+            ps.executeUpdate();
         }
-        ps = con.prepareStatement(query);
-        ps.setString(1, username);
-        ps.executeUpdate();
-        ps.close();
+        try (PreparedStatement ps = con.prepareStatement("DELETE FROM applicants WHERE username = ?")) {
+            ps.setString(1, username);
+            ps.executeUpdate();
+        }
         
-        sendConfirmationEmail(username, b, query);
+        sendConfirmationEmail(username, isConfirmed);
         }
 
 
@@ -113,19 +103,19 @@ public class Clienthandler extends Thread{
         }
         //insert attempt into the database
         String query = "INSERT INTO attempts(participant_username, challenge_id, attempt_date) VALUES(?, ?, NOW())";
-        PreparedStatement St = con.prepareStatement(query);
+        try(PreparedStatement St = con.prepareStatement(query)){
         St.setString(1, info[0].trim());
         St.setInt(2, Integer.parseInt(info[1].trim()));
         St.executeUpdate();
-        St.close();
+        St.close();}
     }
 
 
     //the view applicants command
     private List<Map<String, Object>> retrieveApplicantsFromDatabase(Connection con2) throws SQLException {
         List<Map<String, Object>> applicants = new ArrayList<>();
-        Statement statement = con.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT * FROM applicants");
+       try(Statement statement = con.createStatement();
+        ResultSet resultSet = statement.executeQuery("SELECT * FROM applicants")){
 
         while (resultSet.next()) {
         //constructor
@@ -144,7 +134,7 @@ public class Clienthandler extends Thread{
     resultSet.close();
     statement.close();
 
-    return applicants;
+    return applicants;}
    
         }
 
@@ -152,10 +142,9 @@ public class Clienthandler extends Thread{
     //view challenges command
     private List<Map<String, Object>> retrieveChallengesFromDatabase(Connection con2) throws SQLException {
          List<Map<String, Object>> challenges = new ArrayList<>();
-            Statement statement = con.createStatement();
-            ResultSet resultSet = statement.executeQuery("SELECT * FROM challenges WHERE end_date > NOW()");
-    
-            while (resultSet.next()) {
+            try(Statement statement = con.createStatement();
+            ResultSet resultSet = statement.executeQuery("SELECT * FROM challenges WHERE end_date > NOW()");){
+                            while (resultSet.next()) {
                 Map<String, Object> challenge = new HashMap<>();
                 challenge.put("id", resultSet.getInt("id"));
                 challenge.put("challengeNo", resultSet.getString("challengeNo"));
@@ -170,7 +159,7 @@ public class Clienthandler extends Thread{
             statement.close();
             con.close();
     
-            return challenges;
+            return challenges;}
     }
 
     //handle client registration
@@ -213,22 +202,22 @@ public class Clienthandler extends Thread{
             e.printStackTrace();
     }
     // Send confirmation email to student
-    sendConfirmationEmail(info[3].trim(), false, query);
+    sendConfirmationEmail(info[3].trim(), false);
 
     return true;
     }
     
 
-    private void sendConfirmationEmail(String trim, boolean b, String username) {
-            String host = "mepraise2003@gmail.com";
+    private void sendConfirmationEmail(String username, boolean isConfirmed) {
+            String host = "smtp.gmail.com";
             final String email = "praiseasiimire38@gmail.com";
-            final String password = "0702736307";
+            final String password = "xoyngpbxudrzespd";
 
         Properties props = new Properties();
-        props.put("mail.smtp.auth", "true");
-        props.put("mail.smtp.starttls.enable", "true");
-        props.put("mail.smtp.host", host);
-        props.put("mail.smtp.port", "587");
+        props.put("mail.smtp.auth", "true");//Stmp authentication
+        props.put("mail.smtp.starttls.enable", "true");//enable the encryption
+        props.put("mail.smtp.host", host);//sets the server 
+        props.put("mail.smtp.port", "587");//enables/sets the stmp server port
 
         Session session = Session.getInstance(props, new javax.mail.Authenticator() {
             protected PasswordAuthentication getPasswordAuthentication() {
@@ -240,18 +229,15 @@ public class Clienthandler extends Thread{
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(email));
             // Fetch the representative's email from the database
-            String representativeEmail = getRepresentativeEmail(username);
-            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse(representativeEmail));
-            if (b) {
+           // String representativeEmail = getRepresentativeEmail(username);
+            message.setRecipients(Message.RecipientType.TO, InternetAddress.parse("mepraise2003@gmail.com"));
+            if (isConfirmed) {
                 message.setSubject("Participant Confirmation");
-                message.setText("The participant with username: " + username + " has been confirmed.");
-            } else {
-                message.setSubject("Participant Rejection");
-                message.setText("The participant with username: " + username + " has been rejected.");
+                message.setText("Dear Representative,\n\nApplicant with username: " + username + " has been registered.Please preview and confirm");
             }
-
-            Transport.send(message);
-        } catch (MessagingException | SQLException e) {
+                Transport.send(message);
+                System.out.println("confirmation email sent successfully");
+            }catch (MessagingException e) {
             throw new RuntimeException(e);
         
             }

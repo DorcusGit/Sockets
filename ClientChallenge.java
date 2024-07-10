@@ -8,11 +8,13 @@ public class ClientChallenge {
         
         try{
 Socket soc=new Socket("localhost", 6728);
+System.out.println("\t Welcome to mathematics Challenge System ");
 BufferedReader B=new BufferedReader(new InputStreamReader(System.in));
 PrintWriter P=new PrintWriter(soc.getOutputStream(),true);
 BufferedReader Br=new BufferedReader(new InputStreamReader(soc.getInputStream()));
+String message;
 while(true){
-    System.out.println("\t Welcome to mathematics Challenge System ");
+   
     System.out.println("enter command of your choice from the menu");
     System.out.println("menu\n\n Register  username lastname firstname emailAddress date_of_birth  school_registration_number image _file.png\n\n viewChallenges -displays the challenges \n\n attempt challenge challenge number \n\n view applicants\n\n confirm yes/no username");
     String choice=B.readLine();
@@ -20,7 +22,7 @@ while(true){
     P.println(choice);
     //handle which ever response from the server
     if (choice.startsWith("register")) {
-        String message = Br.readLine();
+        message = Br.readLine();
         System.out.println(message);
     }else
     if(choice.startsWith("viewChallenges")){
@@ -39,7 +41,7 @@ while(true){
         //response from the server from the attempt challenge method
     }else
     if(choice.startsWith("attempt challenge")){
-        String message = Br.readLine();
+        message = Br.readLine();
         System.out.println(message);
         //response from the server from the view applicants method
     }else if(choice.startsWith("view applicants")){
@@ -49,7 +51,7 @@ while(true){
                 for (Map<String, Object> applicant : applicants) {
                     System.out.println(applicant);}
     }else if(choice.startsWith("confirm yes/no username")){
-        String message = Br.readLine();
+        message = Br.readLine();
         System.out.println(message);
     }
 
