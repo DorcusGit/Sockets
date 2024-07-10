@@ -212,16 +212,16 @@ public class Clienthandler extends Thread{
         } catch (IOException e) {
             e.printStackTrace();
     }
-    // Send confirmation email to representative
-    sendConfirmationEmail(info[0].trim(), false, query);
+    // Send confirmation email to student
+    sendConfirmationEmail(info[3].trim(), false, query);
 
     return true;
     }
     
 
     private void sendConfirmationEmail(String trim, boolean b, String username) {
-            String host = "localhost";
-            final String email = "praiseasiimire22@gmail.com";
+            String host = "mepraise2003@gmail.com";
+            final String email = "praiseasiimire38@gmail.com";
             final String password = "0702736307";
 
         Properties props = new Properties();
