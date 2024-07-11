@@ -175,7 +175,7 @@ public class Clienthandler extends Thread{
     }
     //replace a hash with a hyphen
     dateOfBirth = dateOfBirth.replace('/', '-'); // Converting to SQL date format
-    String checkQuery = "SELECT * FROM schools WHERE schoolregistrationumber = ?";
+    String checkQuery = "SELECT * FROM schools WHERE registration_number = ?";
     PreparedStatement checkSt = con.prepareStatement(checkQuery);
     checkSt.setString(1, info[5].trim());
     ResultSet rs = checkSt.executeQuery();
