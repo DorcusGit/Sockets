@@ -9,7 +9,7 @@ public class ServerChallenge {
         System.out.println("\tMathematics Challenge System. waiting for the client.....");  
        //establish database connection
         Class.forName("com.mysql.cj.jdbc.Driver");
-        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/mathematicschallenge","root","");
+        Connection con=DriverManager.getConnection("jdbc:mysql://localhost:3306/challenge","root","");
         System.out.println("Server has connected to the database.");
         while(true){
             //accept client connection
